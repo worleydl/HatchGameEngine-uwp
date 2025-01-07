@@ -165,6 +165,9 @@ void Log::Print(int sev, const char* format, ...) {
     }
 
     printf("%s", severityText);
+#ifdef _UWP
+    OutputDebugStringA(severityText);
+#endif
     if (File)
         fprintf(File, "%s", severityText);
 
@@ -176,6 +179,10 @@ void Log::Print(int sev, const char* format, ...) {
 #endif
 
     printf("%s\n", Buffer);
+#ifdef _UWP
+    OutputDebugStringA(Buffer);
+    OutputDebugStringA("\n");
+#endif
     fflush(stdout);
 
     if (File)

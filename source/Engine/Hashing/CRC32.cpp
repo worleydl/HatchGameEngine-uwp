@@ -19,7 +19,11 @@ Uint32 CRC32::EncryptData(const void* data, size_t size, Uint32 crc) {
         byte = *message;
         crc = crc ^ byte;
         for (j = 7; j >= 0; j--) {
+#ifndef _UWP
             mask = -(crc & 1);
+#else
+            mask = -static_cast<int32_t>(crc & 1);
+#endif
             crc = (crc >> 1) ^ (0xEDB88320 & mask);
         }
         message++;

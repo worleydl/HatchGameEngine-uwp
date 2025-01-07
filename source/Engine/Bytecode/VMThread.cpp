@@ -831,7 +831,7 @@ int     VMThread::RunInstruction() {
             VMValue field;
             VMValue value;
             VMValue object;
-            Table* fields;
+            Table* fields = nullptr;
             ObjClass* klass;
             Obj* objPtr;
             ValueSetFn setter = nullptr;

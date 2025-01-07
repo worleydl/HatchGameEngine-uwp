@@ -48,7 +48,7 @@ void   ResourceManager::Init(const char* filename) {
     ResourceRegistry = new HashMap<ResourceRegistryItem>(CRC32::EncryptData, 16);
 
     if (filename == NULL)
-        filename = "Data.hatch";
+        filename = "E:\\hatch\\Data.hatch";
 
     if (File::Exists(filename)) {
         ResourceManager::UsingDataFolder = false;

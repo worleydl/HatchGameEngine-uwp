@@ -88,7 +88,11 @@ char*   Stream::ReadLine() {
     char* data = (char*)Memory::TrackedMalloc("Stream::ReadLine", size + 1);
 
     if (size > 0) {
+#ifndef _UWP
         Skip(-size);
+#else
+        Skip(-static_cast<int>(size));
+#endif
         ReadBytes(data, size);
     }
 
@@ -105,7 +109,11 @@ char*   Stream::ReadString() {
     char* data = (char*)Memory::TrackedMalloc("Stream::ReadString", size + 1);
 
     if (size > 0) {
+#ifndef _UWP
         Skip(-size);
+#else
+        Skip(-static_cast<int>(size));
+#endif
         ReadBytes(data, size);
     }
 
@@ -128,7 +136,11 @@ Uint16* Stream::ReadUnicodeString() {
     }
     else {
         data = (Uint16*)Memory::TrackedMalloc("Stream::ReadUnicodeString", size);
+#ifndef _UWP
         Skip(-size);
+#else
+        Skip(-static_cast<int>(size));
+#endif
         ReadBytes(data, size);
     }
 

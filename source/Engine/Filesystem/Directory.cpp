@@ -55,8 +55,13 @@ void          Directory::GetFiles(vector<char*>* files, const char* path, const 
             if (*i == '/') *i = '\\';
         }
 
+#ifndef _UWP
         WIN32_FIND_DATA data;
         HANDLE hFind = FindFirstFile(winPath, &data);
+#else
+        WIN32_FIND_DATAA data;
+        HANDLE hFind = FindFirstFileA(winPath, &data);
+#endif
 
         int i;
         char fullpath[MAX_PATH_SIZE];
@@ -82,7 +87,12 @@ void          Directory::GetFiles(vector<char*>* files, const char* path, const 
                     files->push_back(str);
                 }
             }
+#ifndef _UWP
             while (FindNextFile(hFind, &data));
+#else
+            while (FindNextFileA(hFind, &data));
+
+#endif
             FindClose(hFind);
         }
     #else
@@ -132,8 +142,13 @@ void          Directory::GetDirectories(vector<char*>* files, const char* path, 
             if (*i == '/') *i = '\\';
         }
 
+#ifndef _UWP
         WIN32_FIND_DATA data;
         HANDLE hFind = FindFirstFile(winPath, &data);
+#else
+        WIN32_FIND_DATAA data;
+        HANDLE hFind = FindFirstFileA(winPath, &data);
+#endif
 
         int i;
         char fullpath[MAX_PATH_SIZE];
@@ -159,7 +174,11 @@ void          Directory::GetDirectories(vector<char*>* files, const char* path, 
                     }
                 }
             }
+#ifndef _UWP
             while (FindNextFile(hFind, &data));
+#else
+            while (FindNextFileA(hFind, &data));
+#endif
             FindClose(hFind);
         }
     #else

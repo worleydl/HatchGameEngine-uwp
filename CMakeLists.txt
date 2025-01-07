@@ -20,6 +20,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 file(GLOB_RECURSE C_SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "source/*.c")
 file(GLOB_RECURSE CPP_SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "source/*.cpp")
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
+  message("Adding UWP SDL main wrapper")
+  list(APPEND CPP_SOURCES "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/uwp_main.cpp")
+  set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/meta/uwp/uwp_main.cpp" PROPERTIES COMPILE_OPTIONS "-permissive;-ZW")
+endif()
+
 set(HATCH_SOURCES ${C_SOURCES} ${CPP_SOURCES})
 
 set(HATCH_TARGET_NAME ${PROJECT_NAME})
@@ -27,9 +33,18 @@ if(TARGET_NAME)
   set(HATCH_TARGET_NAME ${TARGET_NAME})
 endif()
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
   add_definitions(-DLINUX -DTARGET_NAME=\"${HATCH_TARGET_NAME}\"
    -DNO_LIBAV
+  )
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
+  # Setup UWP build
+  add_definitions(-DWIN32 -DTARGET_NAME=\"${HATCH_TARGET_NAME}\"
+   -DNO_LIBAV
+   #-DGLEW_STATIC # Replaced by aerisarns shared version
+   -D_UWP # Might come in handy
+   -D_CRT_SECURE_NO_WARNINGS
+   -D_WINDOWS
   )
 else()
   # Cross compiling a Windows executable
@@ -71,7 +86,7 @@ endif()
 
 # Renderers
 option(USING_OPENGL "Use OpenGL" ON)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows" OR ${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
   option(USING_DIRECT3D "Use Direct3D" OFF)
 endif()
 
@@ -136,7 +151,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif()
 
 # Find the includes
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
   find_package(SDL2 REQUIRED)
   if(USE_FREETYPE_LIBRARY)
     find_package(Freetype REQUIRED)
@@ -155,6 +170,12 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   endif()
   if(USING_OPENGL)
     set(OPENGL_LIBRARIES "-lGL -lGLEW")
+  endif()
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
+  # TODO: Asset import lib support?
+  set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/include/SDL2/")
+  if(USING_OPENGL)
+    set(OPENGL_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/lib/libglew32.dll.a")
   endif()
 else()
   set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/meta/win/include/SDL2/")
@@ -187,7 +208,7 @@ if(USE_OPEN_ASSET_IMPORT_LIBRARY)
 endif()
 
 # Include libraries
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
   # Add all of the Windows include files
   include_directories(
     meta/win/include
@@ -195,6 +216,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   if(WINDOWS_USE_RESOURCE_FILE)
     target_sources(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/${WIN_RES_FILE})
   endif()
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
+  # Add all of the Windows UWP include files
+  include_directories(
+    meta/uwp/include
+  )
 else()
   if(USE_FREETYPE_LIBRARY)
     include_directories(
@@ -204,7 +230,7 @@ else()
 endif()
 
 # Add libraries
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
   if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     target_link_libraries(${PROJECT_NAME} "${CMAKE_CURRENT_LIST_DIR}/meta/win/lib/msvc/x64/SDL2.lib"
     Ws2_32.lib opengl32.lib winmm.lib imm32.lib version.lib setupapi.lib)
@@ -220,6 +246,26 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     endif()
   endif()
   add_definitions(-DSDL_MAIN_HANDLED)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
+  target_link_libraries(${PROJECT_NAME} "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/lib/SDL2.lib"
+    Ws2_32.lib "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/lib/opengl32.lib" winmm.lib imm32.lib version.lib setupapi.lib onecore.lib WindowsApp.lib)
+
+  # UWP needs custom wrapper for main
+  #add_definitions(-DSDL_MAIN_HANDLED)
+
+  # Project config for UWP
+  message("Setting up UWP project specifics...")
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
+  # Set subsystem to windows or you get stuck in console builds
+  target_link_options(${PROJECT_NAME} PRIVATE "/SUBSYSTEM:WINDOWS")
+
+  # Inspired by aerisarns gzdoom setup for UWP
+  target_link_options(${PROJECT_NAME} PRIVATE
+    /nodefaultlib:vccorlib$<$<CONFIG:Debug>:d>
+    /nodefaultlib:msvcrt$<$<CONFIG:Debug>:d>
+    vccorlib$<$<CONFIG:Debug>:d>.lib
+    msvcrt$<$<CONFIG:Debug>:d>.lib)
 else()
   target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
 endif()

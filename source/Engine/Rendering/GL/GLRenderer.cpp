@@ -156,9 +156,12 @@ size_t GL_VertexIndexBufferStride;
 #define PERF_END(p)
 #endif
 
+#ifndef _UWP
 #define GL_SUPPORTS_MULTISAMPLING
 #define GL_SUPPORTS_SMOOTHING
 #define GL_SUPPORTS_RENDERBUFFER
+#endif
+
 #define GL_MONOCHROME_PIXELFORMAT GL_RED
 #define CHECK_GL() GLShader::CheckGLError(__LINE__)
 
@@ -2163,6 +2166,9 @@ void     GLRenderer::MakeFrameBufferID(ISprite* sprite) {
 
             float texWidth = sprite->Spritesheets[frame->SheetNumber]->Width;
             float texHeight = sprite->Spritesheets[frame->SheetNumber]->Height;
+
+            if (frame->Width > 3840 || frame->Height > 2160)
+                int qq = 0;
 
             float ffU0 = frame->X / texWidth;
             float ffV0 = frame->Y / texHeight;
