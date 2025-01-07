@@ -1514,7 +1514,7 @@ void Application::InitSettings(const char* filename) {
         Application::Settings->SetBool("display", "fullscreen", false);
         Application::Settings->SetBool("display", "vsync", false);
 #else
-        Application::Settings->SetBool("display", "fullscreen", false);
+        Application::Settings->SetBool("display", "fullscreen", true);
         Application::Settings->SetBool("display", "vsync", true);
 #endif
     }

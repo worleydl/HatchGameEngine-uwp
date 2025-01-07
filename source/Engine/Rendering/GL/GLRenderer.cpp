@@ -156,12 +156,9 @@ size_t GL_VertexIndexBufferStride;
 #define PERF_END(p)
 #endif
 
-#ifndef _UWP
 #define GL_SUPPORTS_MULTISAMPLING
 #define GL_SUPPORTS_SMOOTHING
 #define GL_SUPPORTS_RENDERBUFFER
-#endif
-
 #define GL_MONOCHROME_PIXELFORMAT GL_RED
 #define CHECK_GL() GLShader::CheckGLError(__LINE__)
 
