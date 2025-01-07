@@ -80,7 +80,7 @@ endif()
 option(USE_OPEN_ASSET_IMPORT_LIBRARY "Use Open Asset Import Library" ON)
 option(USE_FREETYPE_LIBRARY "Use FreeType" OFF)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
   set(USE_OPEN_ASSET_IMPORT_LIBRARY OFF)
 endif()
 
@@ -172,7 +172,11 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCH
     set(OPENGL_LIBRARIES "-lGL -lGLEW")
   endif()
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "WindowsStore")
-  # TODO: Asset import lib support?
+  # Using prebaked build
+  add_definitions(-DUSING_ASSIMP)
+  set(ASSIMP_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/include/assimp")
+  set(ASSIMP_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/lib/assimp-vc143-mt.lib")
+
   set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/include/SDL2/")
   if(USING_OPENGL)
     set(OPENGL_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/meta/uwp/lib/libglew32.dll.a")

@@ -8,10 +8,18 @@ vector<int> ModelImporter::MeshIDs;
 char*       ModelImporter::ParentDirectory;
 
 #ifdef USING_ASSIMP
+
+#ifndef _UWP
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/material.h>
 #include <assimp/postprocess.h>
+#else
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/material.h"
+#include "assimp/postprocess.h"
+#endif
 
 #define LOG_FMT(s) \
     char s[1024]; \

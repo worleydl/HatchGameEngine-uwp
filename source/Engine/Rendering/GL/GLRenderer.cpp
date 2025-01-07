@@ -2192,7 +2192,6 @@ void     GLRenderer::MakeFrameBufferID(ISprite* sprite) {
 
             // UWP GL driver is losing lots of memory on these tilemaps, flush appears to alleviate?
             #ifdef _UWP
-            if (i % 100 == 0)
                 glFlush();
             #endif
         }
