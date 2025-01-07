@@ -2189,6 +2189,12 @@ void     GLRenderer::MakeFrameBufferID(ISprite* sprite) {
 
             frame->BufferOffset = fc++ * sizeof(vertices);
             glBufferSubData(GL_ARRAY_BUFFER, frame->BufferOffset, sizeof(vertices), vertices);
+
+            // UWP GL driver is losing lots of memory on these tilemaps, flush appears to alleviate?
+            #ifdef _UWP
+            if (i % 100 == 0)
+                glFlush();
+            #endif
         }
     }
 
